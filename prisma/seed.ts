@@ -1,6 +1,7 @@
 import { PrismaClient, Role, Condition } from '@prisma/client';
 import { hash } from 'bcrypt';
-import * as config from '../config/settings.development.json';
+import { readFileSync } from 'fs';
+const config = JSON.parse(readFileSync('./config/settings.development.json', 'utf-8'));
 
 const prisma = new PrismaClient();
 
