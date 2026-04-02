@@ -1,21 +1,23 @@
 import { PrismaClient, Role, Condition } from '@prisma/client';
 import { hash } from 'bcrypt';
 import { readFileSync } from 'fs';
-const config = JSON.parse(readFileSync('./config/settings.development.json', 'utf-8'));
+const config = JSON.parse(readFileSync('../config/settings.development.json', 'utf-8'));
+
+console.log('Config loaded:', { defaultAccounts: config.defaultAccounts?.length, defaultData: config.defaultData?.length, defaultContacts: config.defaultContacts?.length });
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('Seeding the database');
+  await prisma.stuff.deleteMany();
+  await prisma.contact.deleteMany();
   const password = await hash('changeme', 10);
-  config.defaultAccounts.forEach(async (account) => {
+  for (const account of config.defaultAccounts) {
     const role = account.role as Role || Role.USER;
     console.log(`  Creating user: ${account.email} with role: ${role}`);
     await prisma.user.upsert({
       where: { email: account.email },
-      update: {
-        password,
-      },
+      update: {},
       create: {
         email: account.email,
         password,
@@ -23,18 +25,30 @@ async function main() {
       },
     });
     // console.log(`  Created user: ${user.email} with role: ${user.role}`);
-  });
+  }
   for (const data of config.defaultData) {
     const condition = data.condition as Condition || Condition.good;
     console.log(`  Adding stuff: ${JSON.stringify(data)}`);
-    await prisma.stuff.upsert({
-      where: { id: config.defaultData.indexOf(data) + 1 },
-      update: {},
-      create: {
+    await prisma.stuff.create({
+      data: {
         name: data.name,
         quantity: data.quantity,
         owner: data.owner,
         condition,
+      },
+    });
+  }
+
+  for (const data of config.defaultContacts) {
+    console.log(`  Adding contact: ${JSON.stringify(data)}`);
+    await prisma.contact.create({
+      data: {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        address: data.address,
+        image: data.image,
+        description: data.description,
+        owner: data.owner,
       },
     });
   }
