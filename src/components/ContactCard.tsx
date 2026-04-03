@@ -1,10 +1,11 @@
 'use client';
 
 import { Card } from 'react-bootstrap';
-import { Contact } from '../lib/validationSchemas';
+import Link from 'next/link';
+import { Contact } from '@prisma/client';
 
 /* Renders a single row in the List Stuff table. See list/page.tsx. */
-const ContactCard = ({ firstName, lastName, address, image, description }: Contact) => (
+const ContactCard = ({ firstName, lastName, address, image, description, id }: Contact) => (
   <Card className="h-100">
     <div style={{ backgroundColor: '#f2f2f2', padding: '10px', borderBottom: '1px solid #ddd' }}>
       <Card.Img
@@ -23,6 +24,9 @@ const ContactCard = ({ firstName, lastName, address, image, description }: Conta
           {address}
         </Card.Subtitle>
       </Card.Body>
+      <Card.Footer>
+        <Link href={`edit/${id}`}>Edit</Link>
+      </Card.Footer>
     </div>
 
     <Card.Body>
