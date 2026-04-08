@@ -24,12 +24,18 @@ const authOptions: NextAuthConfig = {
           return null;
         }
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
+          where: { email: credentials.email as string },
         });
         if (!user) {
           return null;
         }
-        const isValid = await compare(credentials.password, user.password);
+        const { password } = credentials;
+
+        if (typeof password !== 'string') {
+          return null;
+        }
+
+        const isValid = await compare(password, user.password);
         if (!isValid) {
           return null;
         }

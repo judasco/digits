@@ -1,4 +1,4 @@
-<img src="doc/landing.png">
+<img src="doc/landingpage.png">
 
 digits is a sample Next.js 16 application that illustrates:
 
