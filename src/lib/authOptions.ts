@@ -1,5 +1,7 @@
 import type { NextAuthConfig } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import { compare } from 'bcrypt';
+import { prisma } from './prisma';
 
 type AuthUser = {
   id: string;
@@ -17,7 +19,26 @@ const authOptions: NextAuthConfig = {
         email: { label: 'Email', type: 'email', placeholder: 'john@foo.com' },
         password: { label: 'Password', type: 'password' },
       },
-      // You should define authorize here if needed
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email },
+        });
+        if (!user) {
+          return null;
+        }
+        const isValid = await compare(credentials.password, user.password);
+        if (!isValid) {
+          return null;
+        }
+        return {
+          id: user.id.toString(),
+          email: user.email,
+          role: user.role,
+        };
+      },
     }),
   ],
   pages: {
@@ -50,7 +71,7 @@ const authOptions: NextAuthConfig = {
       return token;
     },
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.AUTH_SECRET,
 };
 
 export default authOptions;

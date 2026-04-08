@@ -1,5 +1,4 @@
 import { Col, Container, Row } from 'react-bootstrap';
-import { Contact } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { adminProtectedPage } from '@/lib/page-protection';
 import { auth } from '@/lib/auth';
@@ -12,7 +11,9 @@ const AdminPage = async () => {
       user: { email: string; id: string; name: string };
     } | null,
   );
-  const contacts: Contact[] = await prisma.contact.findMany({});
+  const contacts = await prisma.contact.findMany({
+    include: { notes: true },
+  });
   return (
     <main>
       <Container id="list" fluid className="py-3">
@@ -22,7 +23,7 @@ const AdminPage = async () => {
             <Row>
           {contacts.map((contact, index) => (
             <Col key={index} md={4} className="mb-4">
-              <ContactCardAdmin {...contact} />
+              <ContactCardAdmin contact={contact} notes={contact.notes} />
             </Col>
           ))}
         </Row>
