@@ -2,9 +2,9 @@ import { Col, Container, Row } from 'react-bootstrap';
 // import { prisma } from '@/lib/prisma';
 import { loggedInProtectedPage } from '@/lib/page-protection';
 import { auth } from '@/lib/auth';
-import { Contact } from '@/lib/validationSchemas';
 import ContactCard from '@/components/ContactCard';
 import { prisma } from '@/lib/prisma';
+import { Contact } from '@prisma/client';
 
 /** Render a list of stuff for the logged in user. */
 const ListPage = async () => {
@@ -29,23 +29,32 @@ const ListPage = async () => {
       owner
     },
   });
-  console.log(contacts);
+
+  const notes = await prisma.note.findMany({
+    where: {
+      owner
+    }
+  });
+
+  console.log('contacts:', contacts, 'notes:', notes);
 
   return (
     <main>
       <Container id="list" fluid className="py-3">
+        <Container>
         <Row>
           <Col>
             <h1 className="text-center">List Contacts</h1>
+            <Row xs={1} md={2} lg={3} className="g-4">
+              {contacts.map((contact) => (
+                <Col key={contact.firstName + contact.lastName}>
+                  <ContactCard contact={contact} notes={notes.filter((note) => note.contactId === contact.id)} />
+                </Col>
+              ))}
+            </Row>
           </Col>
         </Row>
-        <Row>
-          {contacts.map((contact, index) => (
-            <Col key={index} md={4} className="mb-4">
-              <ContactCard {...contact} />
-            </Col>
-          ))}
-        </Row>
+      </Container>
       </Container>
     </main>
   );
