@@ -1,4 +1,4 @@
-import { PrismaClient, Role, Condition } from '@prisma/client';
+import { PrismaClient, Role } from '@prisma/client';
 import { hash } from 'bcrypt';
 import { readFileSync } from 'fs';
 const config = JSON.parse(readFileSync('../config/settings.development.json', 'utf-8'));
@@ -9,7 +9,6 @@ const prisma = new PrismaClient();
 
 async function main() {
   console.log('Seeding the database');
-  await prisma.stuff.deleteMany();
   await prisma.contact.deleteMany();
   const password = await hash('changeme', 10);
   for (const account of config.defaultAccounts) {
@@ -25,18 +24,6 @@ async function main() {
       },
     });
     // console.log(`  Created user: ${user.email} with role: ${user.role}`);
-  }
-  for (const data of config.defaultData) {
-    const condition = data.condition as Condition || Condition.good;
-    console.log(`  Adding stuff: ${JSON.stringify(data)}`);
-    await prisma.stuff.create({
-      data: {
-        name: data.name,
-        quantity: data.quantity,
-        owner: data.owner,
-        condition,
-      },
-    });
   }
 
   for (const data of config.defaultContacts) {
